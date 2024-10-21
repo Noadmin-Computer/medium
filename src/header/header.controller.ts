@@ -1,34 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { HeaderService } from './header.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CreateHeaderDto } from './dto/create-header.dto';
 import { UpdateHeaderDto } from './dto/update-header.dto';
+import { Header } from './entities/header.entity';
+import { HeaderService } from './header.service';
 
+@ApiTags('Header')
 @Controller('header')
 export class HeaderController {
   constructor(private readonly headerService: HeaderService) {}
 
   @Post()
-  create(@Body() createHeaderDto: CreateHeaderDto) {
+  async create(@Body() createHeaderDto: CreateHeaderDto): Promise<Header> {
     return this.headerService.create(createHeaderDto);
   }
 
   @Get()
-  findAll() {
+  async findAll(): Promise<Header[]> {
     return this.headerService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.headerService.findOne(+id);
+  async getById(@Param('id') id: string): Promise<Header> {
+    return this.headerService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateHeaderDto: UpdateHeaderDto) {
-    return this.headerService.update(+id, updateHeaderDto);
+  @Put(':id')
+  async updateHeader(
+    @Param('id') id: string,
+    @Body() updateHeaderDto: UpdateHeaderDto,
+  ): Promise<Header> {
+    return this.headerService.update(id, updateHeaderDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.headerService.remove(+id);
+  async delete(@Param('id') id: string): Promise<void> {
+    return this.headerService.remove(id);
   }
 }

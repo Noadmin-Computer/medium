@@ -1,26 +1,92 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateAdvantageDto } from './dto/create-advantage.dto';
 import { UpdateAdvantageDto } from './dto/update-advantage.dto';
+import { Advantage, AdvantageDocument } from './entities/advantage.entity';
 
 @Injectable()
 export class AdvantagesService {
-  create(createAdvantageDto: CreateAdvantageDto) {
-    return 'This action adds a new advantage';
+  constructor(
+    @InjectModel(Advantage.name)
+    private readonly advantageModel: Model<AdvantageDocument>,
+  ) {}
+
+  async create(createAdvantageDto: CreateAdvantageDto): Promise<Advantage> {
+    try {
+      const createdAdvantage = new this.advantageModel(createAdvantageDto);
+      return await createdAdvantage.save();
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all advantages`;
+  async findAll() {
+    try {
+      const advantage = await this.advantageModel.find();
+      if (!advantage) {
+        throw new NotFoundException(`Advantage not found or empty !`);
+      }
+      return advantage;
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} advantage`;
+  async findOne(id: string): Promise<Advantage> {
+    try {
+      const advantage = await this.advantageModel
+        .findById(id)
+        .populate('advantage_image')
+        .populate('advantage_title')
+        .exec();
+      if (!advantage) {
+        throw new NotFoundException(`Advantage with ID ${id} not found`);
+      }
+      return advantage;
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
-  update(id: number, updateAdvantageDto: UpdateAdvantageDto) {
-    return `This action updates a #${id} advantage`;
+  async findByTitle(title: string): Promise<Advantage | null> {
+    return this.advantageModel
+      .findOne({ advantage_title: new RegExp(title, 'i') })
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} advantage`;
+  async update(
+    id: string,
+    updateAdvantageDto: UpdateAdvantageDto,
+  ): Promise<Advantage> {
+    try {
+      const updatedAdvantage = await this.advantageModel
+        .findByIdAndUpdate(id, updateAdvantageDto, { new: true })
+        .populate('advantage_image')
+        .exec();
+      if (!updatedAdvantage) {
+        throw new NotFoundException(`Advantage with ID ${id} not found`);
+      }
+      return updatedAdvantage;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async remove(id: string): Promise<void> {
+    try {
+      const removedAdvantage = await this.advantageModel
+        .findByIdAndDelete(id)
+        .exec();
+      if (!removedAdvantage) {
+        throw new NotFoundException(`Advantage with ID ${id} not found`);
+      }
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 }
