@@ -1,0 +1,6 @@
+[build]
+  publish = "dist"  # Укажите каталог, где находятся собранные файлы
+  command = "npm run build"  # Команда для сборки проекта
+
+[dev]
+  command = "npm run start:dev"  # Команда для разработки
