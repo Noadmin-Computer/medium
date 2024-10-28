@@ -1,34 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CabinetService } from './cabinet.service';
 import { CreateCabinetDto } from './dto/create-cabinet.dto';
 import { UpdateCabinetDto } from './dto/update-cabinet.dto';
+import { Cabinet } from './entities/cabinet.entity';
 
+@ApiTags('Cabinet')
 @Controller('cabinet')
 export class CabinetController {
   constructor(private readonly cabinetService: CabinetService) {}
 
   @Post()
-  create(@Body() createCabinetDto: CreateCabinetDto) {
+  async create(@Body() createCabinetDto: CreateCabinetDto): Promise<Cabinet> {
     return this.cabinetService.create(createCabinetDto);
   }
 
   @Get()
-  findAll() {
+  async findAll(): Promise<Cabinet[]> {
     return this.cabinetService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cabinetService.findOne(+id);
+  async getById(@Param('id') id: string): Promise<Cabinet> {
+    return this.cabinetService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCabinetDto: UpdateCabinetDto) {
-    return this.cabinetService.update(+id, updateCabinetDto);
+  @Put(':id')
+  async updateCabinet(
+    @Param('id') id: string,
+    @Body() updateCabinetDto: UpdateCabinetDto,
+  ): Promise<Cabinet> {
+    return this.cabinetService.update(id, updateCabinetDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cabinetService.remove(+id);
+  async delete(@Param('id') id: string): Promise<void> {
+    return this.cabinetService.remove(id);
   }
 }

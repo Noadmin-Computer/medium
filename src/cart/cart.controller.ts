@@ -1,34 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CartService } from './cart.service';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
+import { Cart } from './entities/cart.entity';
 
+@ApiTags('Cart')
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Post()
-  create(@Body() createCartDto: CreateCartDto) {
+  async create(@Body() createCartDto: CreateCartDto): Promise<Cart> {
     return this.cartService.create(createCartDto);
   }
-
   @Get()
-  findAll() {
+  async findAll(): Promise<Cart[]> {
     return this.cartService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cartService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCartDto: UpdateCartDto) {
-    return this.cartService.update(+id, updateCartDto);
+  @Put(':id')
+  async updateCart(
+    @Param('id') id: string,
+    @Body() updateCartDto: UpdateCartDto,
+  ): Promise<Cart> {
+    return this.cartService.update(id, updateCartDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cartService.remove(+id);
+  async delete(@Param('id') id: string): Promise<void> {
+    return this.cartService.remove(id);
   }
 }

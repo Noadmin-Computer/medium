@@ -1,26 +1,99 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateProductCardDto } from './dto/create-product-card.dto';
 import { UpdateProductCardDto } from './dto/update-product-card.dto';
+import {
+  ProductCard,
+  ProductCardDocument,
+} from './entities/product-card.entity';
 
 @Injectable()
 export class ProductCardService {
-  create(createProductCardDto: CreateProductCardDto) {
-    return 'This action adds a new productCard';
+  constructor(
+    @InjectModel(ProductCard.name)
+    private readonly productCardModel: Model<ProductCardDocument>,
+  ) {}
+
+  async create(
+    createProductCardDto: CreateProductCardDto,
+  ): Promise<ProductCard> {
+    try {
+      const createdProductCard = new this.productCardModel(
+        createProductCardDto,
+      );
+      return await createdProductCard.save();
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all productCard`;
+  async findAll() {
+    try {
+      const productCard = await this.productCardModel.find();
+      if (!productCard) {
+        throw new NotFoundException(`ProductCard not found or empty !`);
+      }
+      return productCard;
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} productCard`;
+  async findOne(id: string): Promise<ProductCard> {
+    try {
+      const productCard = await this.productCardModel
+        .findById(id)
+        .populate('productCard_image')
+        .populate('productCard_title')
+        .exec();
+      if (!productCard) {
+        throw new NotFoundException(`ProductCard with ID ${id} not found`);
+      }
+      return productCard;
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
-  update(id: number, updateProductCardDto: UpdateProductCardDto) {
-    return `This action updates a #${id} productCard`;
+  async findByTitle(title: string): Promise<ProductCard | null> {
+    return this.productCardModel
+      .findOne({ productCard_title: new RegExp(title, 'i') })
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} productCard`;
+  async update(
+    id: string,
+    updateProductCardDto: UpdateProductCardDto,
+  ): Promise<ProductCard> {
+    try {
+      const updatedProductCard = await this.productCardModel
+        .findByIdAndUpdate(id, updateProductCardDto, { new: true })
+        .populate('productCard_image')
+        .exec();
+      if (!updatedProductCard) {
+        throw new NotFoundException(`ProductCard with ID ${id} not found`);
+      }
+      return updatedProductCard;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async remove(id: string): Promise<void> {
+    try {
+      const removedProductCard = await this.productCardModel
+        .findByIdAndDelete(id)
+        .exec();
+      if (!removedProductCard) {
+        throw new NotFoundException(`ProductCard with ID ${id} not found`);
+      }
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 }

@@ -1,26 +1,87 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
+import { Cart, CartDocument } from './entities/cart.entity';
 
 @Injectable()
 export class CartService {
-  create(createCartDto: CreateCartDto) {
-    return 'This action adds a new cart';
+  constructor(
+    @InjectModel(Cart.name)
+    private readonly cartModel: Model<CartDocument>,
+  ) {}
+
+  async create(createCartDto: CreateCartDto): Promise<Cart> {
+    try {
+      const createdCart = new this.cartModel(createCartDto);
+      return await createdCart.save();
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all cart`;
+  async findAll() {
+    try {
+      const cart = await this.cartModel.find();
+      if (!cart) {
+        throw new NotFoundException(`Cart not found or empty !`);
+      }
+      return cart;
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} cart`;
+  async findOne(id: string): Promise<Cart> {
+    try {
+      const cart = await this.cartModel
+        .findById(id)
+        .populate('cart_image')
+        .populate('cart_title')
+        .exec();
+      if (!cart) {
+        throw new NotFoundException(`Cart with ID ${id} not found`);
+      }
+      return cart;
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
-  update(id: number, updateCartDto: UpdateCartDto) {
-    return `This action updates a #${id} cart`;
+  async findByTitle(title: string): Promise<Cart | null> {
+    return this.cartModel
+      .findOne({ cart_title: new RegExp(title, 'i') })
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cart`;
+  async update(id: string, updateCartDto: UpdateCartDto): Promise<Cart> {
+    try {
+      const updatedCart = await this.cartModel
+        .findByIdAndUpdate(id, updateCartDto, { new: true })
+        .populate('cart_image')
+        .exec();
+      if (!updatedCart) {
+        throw new NotFoundException(`Cart with ID ${id} not found`);
+      }
+      return updatedCart;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async remove(id: string): Promise<void> {
+    try {
+      const removedCart = await this.cartModel.findByIdAndDelete(id).exec();
+      if (!removedCart) {
+        throw new NotFoundException(`Cart with ID ${id} not found`);
+      }
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 }

@@ -1,34 +1,50 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ProductCardService } from './product-card.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CreateProductCardDto } from './dto/create-product-card.dto';
 import { UpdateProductCardDto } from './dto/update-product-card.dto';
+import { ProductCard } from './entities/product-card.entity';
+import { ProductCardService } from './product-card.service';
 
+@ApiTags('Product-Card')
 @Controller('product-card')
 export class ProductCardController {
   constructor(private readonly productCardService: ProductCardService) {}
 
   @Post()
-  create(@Body() createProductCardDto: CreateProductCardDto) {
+  async create(
+    @Body() createProductCardDto: CreateProductCardDto,
+  ): Promise<ProductCard> {
     return this.productCardService.create(createProductCardDto);
   }
 
   @Get()
-  findAll() {
+  async findAll(): Promise<ProductCard[]> {
     return this.productCardService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productCardService.findOne(+id);
+  async getById(@Param('id') id: string): Promise<ProductCard> {
+    return this.productCardService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductCardDto: UpdateProductCardDto) {
-    return this.productCardService.update(+id, updateProductCardDto);
+  @Put(':id')
+  async updateProductCard(
+    @Param('id') id: string,
+    @Body() updateProductCardDto: UpdateProductCardDto,
+  ): Promise<ProductCard> {
+    return this.productCardService.update(id, updateProductCardDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productCardService.remove(+id);
+  async delete(@Param('id') id: string): Promise<void> {
+    return this.productCardService.remove(id);
   }
 }
