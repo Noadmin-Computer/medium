@@ -1,20 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { Document, Types } from 'mongoose';
 import { ProductInner } from 'src/product-inner/entities/product-inner.entity';
 
 @Schema()
 export class ProductCard {
-  @Prop({ required: true })
-  productCard_title: string;
+  @Prop({ type: Types.ObjectId, ref: 'Media', required: false })
+  @ApiProperty({ type: String, description: 'Media ID' })
+  image: Types.ObjectId;
 
   @Prop({ required: true })
-  productCard_subtitle: string;
+  title: string;
 
   @Prop({ required: true })
-  productCard_price: number;
+  subtitle: string;
 
   @Prop({ required: true })
-  productCard_category: string;
+  price: number;
+
+  @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
+  category: Types.ObjectId;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'ProductInner' }] })
   productInners: ProductInner[];

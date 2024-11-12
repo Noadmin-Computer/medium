@@ -7,6 +7,11 @@ export class CreateHeaderDto {
   @ApiProperty({ type: String, example: 'sub_title', required: true })
   sub_title: string;
 
-  @ApiProperty({ type: String, example: 'image', required: true })
+  @ApiProperty({
+    type: String,
+    description: 'Media ID',
+    required: true,
+    example: 'Image ID',
+  })
   image: string;
 }

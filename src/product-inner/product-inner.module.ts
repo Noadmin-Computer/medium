@@ -4,17 +4,18 @@ import {
   ProductInner,
   ProductInnerSchema,
 } from './entities/product-inner.entity';
-import { ProductInnerController } from './product-inner.controller';
-import { ProductInnerService } from './product-inner.service';
-
+import { ProductsInnerController } from './product-inner.controller';
+import { ProductsInnerService } from './product-inner.service';
+import { BrandsModule } from '../brand/brand.module';
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: ProductInner.name, schema: ProductInnerSchema },
     ]),
+    BrandsModule,
   ],
-  controllers: [ProductInnerController],
-  providers: [ProductInnerService],
-  exports: [ProductInnerService],
+  controllers: [ProductsInnerController],
+  providers: [ProductsInnerService],
+  exports: [ProductsInnerService],
 })
 export class ProductInnerModule {}

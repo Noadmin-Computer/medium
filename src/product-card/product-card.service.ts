@@ -34,7 +34,7 @@ export class ProductCardService {
 
   async findAll() {
     try {
-      const productCard = await this.productCardModel.find();
+      const productCard = await this.productCardModel.find().populate('image');
       if (!productCard) {
         throw new NotFoundException(`ProductCard not found or empty !`);
       }
@@ -48,7 +48,7 @@ export class ProductCardService {
     try {
       const productCard = await this.productCardModel
         .findById(id)
-        .populate('productCard_image')
+        .populate('image')
         .populate('productCard_title')
         .exec();
       if (!productCard) {
@@ -73,7 +73,7 @@ export class ProductCardService {
     try {
       const updatedProductCard = await this.productCardModel
         .findByIdAndUpdate(id, updateProductCardDto, { new: true })
-        .populate('productCard_image')
+        .populate('image')
         .exec();
       if (!updatedProductCard) {
         throw new NotFoundException(`ProductCard with ID ${id} not found`);
@@ -81,6 +81,25 @@ export class ProductCardService {
       return updatedProductCard;
     } catch (error) {
       throw new BadRequestException(error.message);
+    }
+  }
+
+  async findByCategory(category: string): Promise<ProductCard[]> {
+    try {
+      const productCards = await this.productCardModel
+        .find({ category })
+        .populate('image')
+        .exec();
+
+      if (!productCards.length) {
+        throw new NotFoundException(
+          `No ProductCards found for category: ${category}`,
+        );
+      }
+
+      return productCards;
+    } catch (error) {
+      throw new NotFoundException(error.message);
     }
   }
 

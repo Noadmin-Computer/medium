@@ -30,6 +30,13 @@ export class ProductCardController {
     return this.productCardService.findAll();
   }
 
+  @Get('category/:category')
+  async findByCategory(
+    @Param('category') category: string,
+  ): Promise<ProductCard[]> {
+    return this.productCardService.findByCategory(category);
+  }
+
   @Get(':id')
   async getById(@Param('id') id: string): Promise<ProductCard> {
     return this.productCardService.findOne(id);

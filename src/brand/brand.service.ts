@@ -17,71 +17,45 @@ export class BrandsService {
   ) {}
 
   async create(createBrandDto: CreateBrandDto): Promise<Brand> {
-    try {
-      const createdBrand = new this.brandModel(createBrandDto);
-      return await createdBrand.save();
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+    const createdBrand = new this.brandModel(createBrandDto);
+    return await createdBrand.save();
   }
 
-  async findAll() {
-    try {
-      const brand = await this.brandModel.find();
-      if (!brand) {
-        throw new NotFoundException(`Brand not found or empty !`);
-      }
-      return brand;
-    } catch (error) {
-      throw new NotFoundException(error.message);
+  async findAll(): Promise<Brand[]> {
+    const brands = await this.brandModel
+      .find()
+      .populate('image')
+      .populate('background')
+      .exec();
+
+    if (!brands || brands.length === 0) {
+      throw new NotFoundException('No brands found.');
     }
+    return brands;
   }
 
   async findOne(id: string): Promise<Brand> {
-    try {
-      const brand = await this.brandModel
-        .findById(id)
-        .populate('brand_image')
-        .populate('brand_title')
-        .exec();
-      if (!brand) {
-        throw new NotFoundException(`Brand with ID ${id} not found`);
-      }
-      return brand;
-    } catch (error) {
-      throw new NotFoundException(error.message);
+    const brand = await this.brandModel.findById(id).exec();
+    if (!brand) {
+      throw new NotFoundException(`Brand with ID ${id} not found`);
     }
-  }
-
-  async findByTitle(title: string): Promise<Brand | null> {
-    return this.brandModel
-      .findOne({ brand_title: new RegExp(title, 'i') })
-      .exec();
+    return brand;
   }
 
   async update(id: string, updateBrandDto: UpdateBrandDto): Promise<Brand> {
-    try {
-      const updatedBrand = await this.brandModel
-        .findByIdAndUpdate(id, updateBrandDto, { new: true })
-        .populate('brand_image')
-        .exec();
-      if (!updatedBrand) {
-        throw new NotFoundException(`Brand with ID ${id} not found`);
-      }
-      return updatedBrand;
-    } catch (error) {
-      throw new BadRequestException(error.message);
+    const updatedBrand = await this.brandModel
+      .findByIdAndUpdate(id, updateBrandDto, { new: true })
+      .exec();
+    if (!updatedBrand) {
+      throw new NotFoundException(`Brand with ID ${id} not found`);
     }
+    return updatedBrand;
   }
 
   async remove(id: string): Promise<void> {
-    try {
-      const removedBrand = await this.brandModel.findByIdAndDelete(id).exec();
-      if (!removedBrand) {
-        throw new NotFoundException(`Brand with ID ${id} not found`);
-      }
-    } catch (error) {
-      throw new NotFoundException(error.message);
+    const removedBrand = await this.brandModel.findByIdAndDelete(id).exec();
+    if (!removedBrand) {
+      throw new NotFoundException(`Brand with ID ${id} not found`);
     }
   }
 }

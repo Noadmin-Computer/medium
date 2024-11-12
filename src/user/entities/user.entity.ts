@@ -20,7 +20,7 @@ export class User {
   @IsString()
   middle_name: string;
 
-	@Prop()
+  @Prop()
   @ApiProperty({ type: String, description: 'gender' })
   @IsString()
   gender: string;

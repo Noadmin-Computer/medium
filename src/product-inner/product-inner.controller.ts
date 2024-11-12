@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   Post,
   Put,
@@ -12,56 +11,40 @@ import { ApiTags } from '@nestjs/swagger';
 import { CreateProductInnerDto } from './dto/create-product-inner.dto';
 import { UpdateProductInnerDto } from './dto/update-product-inner.dto';
 import { ProductInner } from './entities/product-inner.entity';
-import { ProductInnerService } from './product-inner.service';
+import { ProductsInnerService } from './product-inner.service';
 
-@ApiTags('Product-Inner')
+@ApiTags('Products')
 @Controller('product-inner')
-export class ProductInnerController {
-  constructor(private readonly productInnerService: ProductInnerService) {}
+export class ProductsInnerController {
+  constructor(private readonly productsService: ProductsInnerService) {}
 
   @Post()
   async create(
-    @Body() createProductInnerDto: CreateProductInnerDto,
+    @Body() createProductDto: CreateProductInnerDto,
   ): Promise<ProductInner> {
-    return this.productInnerService.create(createProductInnerDto);
+    return this.productsService.create(createProductDto);
   }
 
   @Get()
   async findAll(): Promise<ProductInner[]> {
-    return this.productInnerService.findAll();
+    return this.productsService.findAll();
   }
 
   @Get(':id')
   async getById(@Param('id') id: string): Promise<ProductInner> {
-    return this.productInnerService.findOne(id);
-  }
-
-  @Get(':id/:color')
-  async getByColor(
-    @Param('id') id: string,
-    @Param('color') color: string,
-  ): Promise<ProductInner> {
-    const product = await this.productInnerService.findOneLean(id); // Используем новый метод
-    const variation = product.variations.find((v) => v.color === color);
-    if (!variation) {
-      throw new NotFoundException(`Product with color ${color} not found`);
-    }
-    return {
-      ...product,
-      variations: [variation],
-    };
+    return this.productsService.findOne(id);
   }
 
   @Put(':id')
-  async updateProductInner(
+  async updateProduct(
     @Param('id') id: string,
-    @Body() updateProductInnerDto: UpdateProductInnerDto,
+    @Body() updateProductDto: UpdateProductInnerDto,
   ): Promise<ProductInner> {
-    return this.productInnerService.update(id, updateProductInnerDto);
+    return this.productsService.update(id, updateProductDto);
   }
 
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<void> {
-    return this.productInnerService.remove(id);
+    return this.productsService.remove(id);
   }
 }

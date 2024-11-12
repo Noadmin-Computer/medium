@@ -1,7 +1,7 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
-import { SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 
 export type AdvantageDocument = Advantage & Document;
 @Schema()
@@ -16,10 +16,13 @@ export class Advantage {
   @IsString()
   sub_title: string;
 
-  @Prop()
-  @ApiProperty({ type: String, description: 'image' })
-  @IsString()
-  image: string;
+  @Prop({ type: Types.ObjectId, ref: 'Media', required: false })
+  @ApiProperty({ type: String, description: 'Media ID' })
+  image: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Media', required: false })
+  @ApiProperty({ type: String, description: 'Media ID' })
+  background: Types.ObjectId;
 }
 
 export const AdvantageSchema = SchemaFactory.createForClass(Advantage);

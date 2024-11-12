@@ -11,104 +11,109 @@ import {
   ProductInner,
   ProductInnerDocument,
 } from './entities/product-inner.entity';
+import { Brand, BrandDocument } from 'src/brand/entities/brand.entity';
 
 @Injectable()
-export class ProductInnerService {
+export class ProductsInnerService {
   constructor(
     @InjectModel(ProductInner.name)
-    private readonly productInnerModel: Model<ProductInnerDocument>,
+    private readonly productModel: Model<ProductInnerDocument>,
+    @InjectModel(Brand.name)
+    private readonly brandModel: Model<BrandDocument>,
   ) {}
 
   async create(
     createProductInnerDto: CreateProductInnerDto,
   ): Promise<ProductInner> {
+    const brandExists = await this.brandModel.exists({
+      _id: createProductInnerDto.brand,
+    });
+
+    if (!brandExists) {
+      throw new NotFoundException('Brand not found');
+    }
+
     try {
-      const createdProductInner = new this.productInnerModel(
-        createProductInnerDto,
-      );
-      return await createdProductInner.save();
+      const createdProduct = new this.productModel(createProductInnerDto);
+      return await createdProduct.save();
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
-  async findAll() {
-    try {
-      const productInner = await this.productInnerModel.find();
-      if (!productInner) {
-        throw new NotFoundException(`ProductInner not found or empty !`);
-      }
-      return productInner;
-    } catch (error) {
-      throw new NotFoundException(error.message);
+  async findAll(): Promise<ProductInner[]> {
+    const products = await this.productModel
+      .find()
+      .populate({
+        path: 'brand',
+        populate: [
+          { path: 'image', model: 'Media' },
+          { path: 'background', model: 'Media' },
+        ],
+      })
+      .populate({
+        path: 'variations.image',
+        model: 'Media',
+      })
+      .exec();
+
+    if (!products || products.length === 0) {
+      throw new NotFoundException('No products found.');
     }
+    return products;
   }
 
   async findOne(id: string): Promise<ProductInner> {
-    try {
-      const productInner = await this.productInnerModel
-        .findById(id)
-        .populate('productInner_image')
-        .populate('productInner_title')
-        .exec();
-      if (!productInner) {
-        throw new NotFoundException(`ProductInner with ID ${id} not found`);
-      }
-      return productInner;
-    } catch (error) {
-      throw new NotFoundException(error.message);
-    }
-  }
-
-  async findByTitle(title: string): Promise<ProductInner | null> {
-    return this.productInnerModel
-      .findOne({ productInner_title: new RegExp(title, 'i') })
+    const product = await this.productModel
+      .findById(id)
+      .populate({
+        path: 'brand',
+        populate: [
+          { path: 'image', model: 'Media' },
+          { path: 'background', model: 'Media' },
+        ],
+      })
+      .populate({
+        path: 'variations.image',
+        model: 'Media',
+      })
       .exec();
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+    return product;
   }
 
   async update(
     id: string,
-    updateProductInnerDto: UpdateProductInnerDto,
+    updateProductDto: UpdateProductInnerDto,
   ): Promise<ProductInner> {
-    try {
-      const updatedProductInner = await this.productInnerModel
-        .findByIdAndUpdate(id, updateProductInnerDto, { new: true })
-        .populate('productInner_image')
-        .exec();
-      if (!updatedProductInner) {
-        throw new NotFoundException(`ProductInner with ID ${id} not found`);
-      }
-      return updatedProductInner;
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
-  }
+    const updatedProduct = await this.productModel
+      .findByIdAndUpdate(id, updateProductDto, { new: true })
+      .populate({
+        path: 'brand',
+        populate: [
+          { path: 'image', model: 'Media' },
+          { path: 'background', model: 'Media' },
+        ],
+      })
+      .populate({
+        path: 'variations.image',
+        model: 'Media',
+      })
+      .exec();
 
-  async findOneLean(id: string): Promise<ProductInner> {
-    try {
-      const productInner = await this.productInnerModel
-        .findById(id)
-        .lean()
-        .exec();
-      if (!productInner) {
-        throw new NotFoundException(`ProductInner with ID ${id} not found`);
-      }
-      return productInner;
-    } catch (error) {
-      throw new NotFoundException(error.message);
+    if (!updatedProduct) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
+    return updatedProduct;
   }
 
   async remove(id: string): Promise<void> {
-    try {
-      const removedProductInner = await this.productInnerModel
-        .findByIdAndDelete(id)
-        .exec();
-      if (!removedProductInner) {
-        throw new NotFoundException(`ProductInner with ID ${id} not found`);
-      }
-    } catch (error) {
-      throw new NotFoundException(error.message);
+    const removedProduct = await this.productModel.findByIdAndDelete(id).exec();
+    if (!removedProduct) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
   }
 }

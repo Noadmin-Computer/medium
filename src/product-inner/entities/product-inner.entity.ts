@@ -1,55 +1,37 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, ValidateNested } from 'class-validator';
+import { Types } from 'mongoose';
+import { Brand } from 'src/brand/entities/brand.entity';
+import { CategoryType } from 'src/category/entities/category-type.enum';
 import { Type } from 'class-transformer';
-import { IsArray, IsString, ValidateNested } from 'class-validator';
+import {
+  ProductVariationDetails,
+  ProductVariationDetailsSchema,
+} from './product-variation-details.entity';
 
 export type ProductInnerDocument = ProductInner & Document;
 
-class ProductVariation {
-  @Prop()
-  @ApiProperty({ type: String, description: 'color' })
-  @IsString()
-  color: string;
-
-  @Prop()
-  @ApiProperty({ type: String, description: 'price' })
-  @IsString()
-  price: string;
-
-  @Prop()
-  @ApiProperty({ type: String, description: 'size' })
-  @IsString()
-  size: string;
-
-  @Prop()
-  @ApiProperty({ type: String, description: 'category' })
-  @IsString()
-  category: string;
-
-  @Prop()
-  @ApiProperty({ type: String, description: 'image' })
-  @IsString()
-  image: string;
-}
-
 @Schema()
 export class ProductInner {
-  @Prop()
-  @ApiProperty({ type: String, description: 'brand' })
-  @IsString()
-  brand: string;
+  @Prop({ type: Types.ObjectId, ref: Brand.name })
+  @ApiProperty({ type: String, description: 'ID Brand' })
+  brand: Types.ObjectId;
 
   @Prop()
-  @ApiProperty({ type: String, description: 'title' })
+  @ApiProperty({ type: String, description: 'Title' })
   @IsString()
   title: string;
 
-  @Prop({ type: [ProductVariation] })
-  @ApiProperty({ type: [ProductVariation], description: 'variations' })
-  @IsArray()
+  @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
+  @ApiProperty({ type: String, description: 'Category' })
+  category: Types.ObjectId;
+
+  @Prop({ type: Map, of: ProductVariationDetailsSchema })
+  @ApiProperty({ description: 'Variation', type: Map })
   @ValidateNested({ each: true })
-  @Type(() => ProductVariation)
-  variations: ProductVariation[];
+  @Type(() => ProductVariationDetails)
+  color: Map<string, ProductVariationDetails>;
 }
 
 export const ProductInnerSchema = SchemaFactory.createForClass(ProductInner);

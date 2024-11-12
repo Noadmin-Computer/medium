@@ -41,7 +41,7 @@ export class HeaderService {
     try {
       const header = await this.headerModel
         .findById(id)
-        .populate('header_image')
+        .populate('image')
         .populate('header_title')
         .exec();
       if (!header) {
@@ -56,6 +56,7 @@ export class HeaderService {
   async findByTitle(title: string): Promise<Header | null> {
     return this.headerModel
       .findOne({ header_title: new RegExp(title, 'i') })
+      .populate('image')
       .exec();
   }
 

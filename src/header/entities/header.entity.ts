@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export type HeaderDocument = Header & Document;
 @Schema()
@@ -15,10 +16,9 @@ export class Header {
   @IsString()
   sub_title: string;
 
-  @Prop()
-  @ApiProperty({ type: String, description: 'image' })
-  @IsString()
-  image: string;
+  @Prop({ type: Types.ObjectId, ref: 'Media', required: false })
+  @ApiProperty({ type: String, description: 'Media ID' })
+  image: Types.ObjectId;
 }
 
 export const HeaderSchema = SchemaFactory.createForClass(Header);

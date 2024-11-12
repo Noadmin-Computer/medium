@@ -27,7 +27,7 @@ export class AdvantagesService {
 
   async findAll() {
     try {
-      const advantage = await this.advantageModel.find();
+      const advantage = await this.advantageModel.find().populate('image');
       if (!advantage) {
         throw new NotFoundException(`Advantage not found or empty !`);
       }
@@ -41,7 +41,7 @@ export class AdvantagesService {
     try {
       const advantage = await this.advantageModel
         .findById(id)
-        .populate('advantage_image')
+        .populate('image')
         .populate('advantage_title')
         .exec();
       if (!advantage) {
